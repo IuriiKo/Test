@@ -5,6 +5,8 @@ import com.example.xaocu.test.TestApp;
 import com.example.xaocu.test.mvp.BaseMvpPresenter;
 import com.example.xaocu.test.mvp.view.MainView;
 
+import java.io.IOException;
+
 import okhttp3.ResponseBody;
 import retrofit2.Response;
 import rx.android.schedulers.AndroidSchedulers;
@@ -22,17 +24,26 @@ public class MainPresenter extends BaseMvpPresenter<MainView> {
 
   public void doSome() {
     TestApp.getManager().getService().getSome("")
+        .map(this::getStringFromResponse)
         .subscribeOn(Schedulers.io())
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(this::onSuccessDoSome, this::onErrorDoSome);
   }
 
-  private void onSuccessDoSome(Response<ResponseBody> response) {
+  private String getStringFromResponse(Response<ResponseBody> response) {
+    try {
+      return new String(response.body().bytes());
+    } catch (IOException e) {
+      throw new Error("IOException", e);
+    }
+  }
+
+  private void onSuccessDoSome(String s) {
     if (getView() == null) {
       return;
     }
 
-    getView().getSomeSuccess();
+    getView().getSomeSuccess(s);
   }
 
   private void onErrorDoSome(Throwable t) {

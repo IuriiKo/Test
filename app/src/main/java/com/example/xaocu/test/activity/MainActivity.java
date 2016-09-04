@@ -2,6 +2,7 @@ package com.example.xaocu.test.activity;
 
 import android.support.annotation.NonNull;
 import android.os.Bundle;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.xaocu.test.Logger;
@@ -11,12 +12,19 @@ import com.example.xaocu.test.mvp.BaseMvpActivity;
 import com.example.xaocu.test.mvp.view.MainView;
 import com.example.xaocu.test.presenter.MainPresenter;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 public class MainActivity extends BaseMvpActivity<MainView,MainPresenter> implements MainView {
 private static final String LOG_TAG = Logger.createTag(MainActivity.class);
+  @BindView(R.id.tvMain)
+  TextView textView;
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
+    unbinder = ButterKnife.bind(this);
     getPresenter().doSome();
   }
 
@@ -28,8 +36,9 @@ private static final String LOG_TAG = Logger.createTag(MainActivity.class);
 
 
   @Override
-  public void getSomeSuccess() {
+  public void getSomeSuccess(String s) {
     Toast.makeText(this, "Connect to server is success", Toast.LENGTH_LONG).show();
+    textView.setText(s);
   }
 
   @Override
