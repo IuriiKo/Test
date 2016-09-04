@@ -1,5 +1,8 @@
 package com.example.xaocu.test;
 
+import android.support.annotation.Nullable;
+
+import com.example.xaocu.test.delegates.BaseDelegate;
 import com.example.xaocu.test.delegates.SmallItemDelegate;
 import com.example.xaocu.test.mvp.DelegateType;
 
@@ -12,14 +15,14 @@ import java.util.Map;
 public class DelegateFactory {
   private Map<Integer, BaseDelegate> cashDelegate = new HashMap<>();
 
-  public BaseDelegate getDelegate(@DelegateType int type) {
+  public BaseDelegate getDelegate(@DelegateType int type, @Nullable OnDelegateClickListener clickListener) {
     BaseDelegate delegate;
     if (cashDelegate.containsKey(type)) {
       return cashDelegate.get(type);
     } else {
       switch (type) {
         case DelegateType.smallItemType:
-          delegate =  new SmallItemDelegate();
+          delegate = new SmallItemDelegate(clickListener);
           break;
         default:
           throw new IllegalArgumentException("DelegateFactory don't contain a delegate with type = " + type);

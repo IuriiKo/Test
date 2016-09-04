@@ -3,6 +3,8 @@ package com.example.xaocu.test;
 import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
 
+import com.example.xaocu.test.delegates.BaseDelegate;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -11,11 +13,16 @@ import java.util.List;
  * Created by Iurii Kushyk on 03.09.2016.
  */
 public class BaseAdapter<T extends BaseItem> extends RecyclerView.Adapter {
-  private List<T> originList = new ArrayList<>();
+  private List<BaseItem> originList = new ArrayList<>();
   private DelegateFactory delegateFactory = new DelegateFactory();
+  private OnDelegateClickListener listener;
+
+  public BaseAdapter(OnDelegateClickListener listener) {
+    this.listener = listener;
+  }
 
   private BaseDelegate getDelegate(int viewType) {
-    return delegateFactory.getDelegate(viewType);
+    return delegateFactory.getDelegate(viewType, listener);
   }
 
   @Override
@@ -25,7 +32,7 @@ public class BaseAdapter<T extends BaseItem> extends RecyclerView.Adapter {
 
   @Override
   public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-    return getDelegate(viewType).onCreateViewHolder(parent,viewType);
+    return getDelegate(viewType).onCreateViewHolder(parent);
   }
 
   @Override
