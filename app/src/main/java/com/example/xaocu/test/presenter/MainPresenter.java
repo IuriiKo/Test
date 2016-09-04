@@ -2,13 +2,14 @@ package com.example.xaocu.test.presenter;
 
 import com.example.xaocu.test.Logger;
 import com.example.xaocu.test.TestApp;
+import com.example.xaocu.test.items.SmallItem;
+import com.example.xaocu.test.model.Comment;
 import com.example.xaocu.test.mvp.BaseMvpPresenter;
 import com.example.xaocu.test.mvp.view.MainView;
 
-import java.io.IOException;
+import java.util.List;
 
-import okhttp3.ResponseBody;
-import retrofit2.Response;
+import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
@@ -23,27 +24,22 @@ public class MainPresenter extends BaseMvpPresenter<MainView> {
   }
 
   public void doSome() {
-    TestApp.getManager().getService().getSome("")
-        .map(this::getStringFromResponse)
+    TestApp.getManager().getService().getSome()
+        .flatMap(Observable::from)
+        .map(SmallItem::new)
+        .limit(4)
+        .toList()
         .subscribeOn(Schedulers.io())
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(this::onSuccessDoSome, this::onErrorDoSome);
   }
 
-  private String getStringFromResponse(Response<ResponseBody> response) {
-    try {
-      return new String(response.body().bytes());
-    } catch (IOException e) {
-      throw new Error("IOException", e);
-    }
-  }
-
-  private void onSuccessDoSome(String s) {
+  private void onSuccessDoSome(List<SmallItem> comments) {
     if (getView() == null) {
       return;
     }
 
-    getView().getSomeSuccess(s);
+    getView().getSomeSuccess(comments);
   }
 
   private void onErrorDoSome(Throwable t) {

@@ -11,7 +11,7 @@ public class NetManager {
   private final TestRequestService service;
 
   public NetManager() {
-    Retrofit retrofit = new Retrofit.Builder().baseUrl("http://keddr.com/")
+    Retrofit retrofit = new Retrofit.Builder().baseUrl("http://jsonplaceholder.typicode.com")
         .addConverterFactory(GsonConverterFactory.create())
         .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
         .build();
