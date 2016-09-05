@@ -9,7 +9,7 @@ import com.example.xaocu.test.BaseItem;
 import com.example.xaocu.test.OnDelegateClickListener;
 import com.example.xaocu.test.R;
 import com.example.xaocu.test.items.SmallItem;
-import com.example.xaocu.test.model.Comment;
+import com.example.xaocu.test.model.Feed;
 
 import java.util.List;
 
@@ -32,22 +32,39 @@ public class SmallItemDelegate extends BaseDelegate {
   }
 
   @Override
-  public void onBindViewHolder(RecyclerView.ViewHolder holder, int position, List<? extends BaseItem> items) {
+  public void onBindViewHolder(Object object, RecyclerView.ViewHolder holder, int position, List<? extends BaseItem> items) {
+    if (object == null) {
+      return;
+    }
     SmallItemViewHolder vh = (SmallItemViewHolder) holder;
-    Comment comment = ((SmallItem)items.get(position)).getComment();
-    vh.tvName.setText(comment.getName());
-    vh.tvEmail.setText(comment.getEmail());
-    vh.tvBody.setText(comment.getBody());
+    List<Object> objects = ((SmallItem)items.get(position)).getObjects();
+    List<String> column_names = ((Feed) object).getDataset().getColumn_names();
+    if (column_names == null) {
+      return;
+    }
+    for (int i = 0; i < column_names.size(); i++) {
+      String columnName = column_names.get(i);
+      if ("open".equalsIgnoreCase(columnName)) {
+        vh.tvOpen.setText(objects.get(i).toString());
+      } else if ("high".equalsIgnoreCase(columnName)) {
+        vh.tvHigh.setText(objects.get(i).toString());
+      } else if ("low".equalsIgnoreCase(columnName)) {
+        vh.tvLow.setText(objects.get(i).toString());
+      }else if ("close".equalsIgnoreCase(columnName)) {
+        vh.tvClose.setText(objects.get(i).toString());
+      }
+    }
   }
 
-
   public class SmallItemViewHolder extends BaseViewHolder{
-    @BindView(R.id.tvName)
-    TextView tvName;
-    @BindView(R.id.tvEmail)
-    TextView tvEmail;
-    @BindView(R.id.tvBody)
-    TextView tvBody;
+    @BindView(R.id.tvOpen)
+    TextView tvOpen;
+    @BindView(R.id.tvHigh)
+    TextView tvHigh;
+    @BindView(R.id.tvLow)
+    TextView tvLow;
+    @BindView(R.id.tvClose)
+    TextView tvClose;
     public SmallItemViewHolder(View itemView) {
       super(itemView);
     }

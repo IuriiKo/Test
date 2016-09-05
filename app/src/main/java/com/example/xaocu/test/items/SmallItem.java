@@ -1,20 +1,22 @@
 package com.example.xaocu.test.items;
 
 import com.example.xaocu.test.BaseItem;
-import com.example.xaocu.test.model.Comment;
 import com.example.xaocu.test.mvp.DelegateType;
+
+import java.util.List;
 
 /**
  * Created by Iurii Kushyk on 04.09.2016.
  */
 public class SmallItem extends BaseItem {
-  private Comment comment;
-  public SmallItem(Comment comment) {
+  List objects;
+
+  public SmallItem(List objects) {
     super(DelegateType.smallItemType);
-    this.comment = comment;
+    this.objects = objects;
   }
 
-  public Comment getComment() {
-    return comment;
+  public List getObjects() {
+    return objects;
   }
 }
