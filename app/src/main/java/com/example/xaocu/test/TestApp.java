@@ -1,6 +1,7 @@
 package com.example.xaocu.test;
 
 import android.app.Application;
+import android.content.Context;
 
 import com.example.xaocu.test.net.NetManager;
 
@@ -9,10 +10,16 @@ import com.example.xaocu.test.net.NetManager;
  */
 public class TestApp extends Application {
   private static NetManager manager;
+  private static Context applicationContext;
   @Override
   public void onCreate() {
     super.onCreate();
+    applicationContext = this;
     initNetManager();
+  }
+
+  public static Context getContext() {
+    return applicationContext;
   }
 
   private void initNetManager() {

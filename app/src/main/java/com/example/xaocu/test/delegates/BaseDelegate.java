@@ -25,7 +25,7 @@ public abstract class BaseDelegate {
 
   public abstract BaseViewHolder onCreateViewHolder(ViewGroup parent);
 
-  public abstract void onBindViewHolder(RecyclerView.ViewHolder holder, int position, List<? extends BaseItem> items);
+  public abstract void onBindViewHolder(Object object, RecyclerView.ViewHolder holder, int position, List<? extends BaseItem> items);
 
   public class BaseViewHolder extends RecyclerView.ViewHolder implements OnDelegateClickListener {
     public BaseViewHolder(View itemView) {

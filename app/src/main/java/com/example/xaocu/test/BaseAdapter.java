@@ -13,6 +13,7 @@ import java.util.List;
  * Created by Iurii Kushyk on 03.09.2016.
  */
 public class BaseAdapter<T extends BaseItem> extends RecyclerView.Adapter {
+  private Object object;
   private List<T> originList = new ArrayList<>();
   private DelegateFactory delegateFactory = new DelegateFactory();
   private OnDelegateClickListener listener;
@@ -23,6 +24,10 @@ public class BaseAdapter<T extends BaseItem> extends RecyclerView.Adapter {
 
   private BaseDelegate getDelegate(int viewType) {
     return delegateFactory.getDelegate(viewType, listener);
+  }
+
+  public void setBindObject(Object object) {
+    this.object = object;
   }
 
   @Override
@@ -37,7 +42,7 @@ public class BaseAdapter<T extends BaseItem> extends RecyclerView.Adapter {
 
   @Override
   public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-    getDelegate(getItemViewType(position)).onBindViewHolder(holder, position, originList);
+    getDelegate(getItemViewType(position)).onBindViewHolder(object, holder, position, originList);
   }
 
   @Override
