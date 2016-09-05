@@ -1,6 +1,7 @@
 package com.example.xaocu.test.presenter;
 
 import android.support.annotation.NonNull;
+import android.util.LruCache;
 import android.util.Pair;
 
 import com.example.xaocu.test.Logger;
@@ -23,22 +24,28 @@ import rx.schedulers.Schedulers;
  */
 public class MainPresenter extends BaseMvpPresenter<MainView> {
   private static final String LOG_TAG = Logger.createTag(MainPresenter.class);
+  public static final int MAX_CASH_SIZE = 40 * 1024;
   private Subscription subscription;
   private Subscription subscriptionGetCVCode;
-  private String oldDataSet;
+  private String oldConstraint;
+  private LruCache<String, Pair<List<SmallItem>,Feed>> cach = new LruCache<>(MAX_CASH_SIZE);
 
   public MainPresenter(MainView view) {
     super(view);
   }
 
   public void doSome(@NonNull String datasetCode) {
-    if (datasetCode.equalsIgnoreCase(oldDataSet)) {
+    if (datasetCode.equalsIgnoreCase(oldConstraint)) {
       return;
     }
     if (subscription != null) {
       subscription.unsubscribe();
     }
-    oldDataSet = datasetCode;
+    oldConstraint = datasetCode;
+    if (cach.get(datasetCode) != null) {
+      onSuccessDoSome(cach.get(oldConstraint));
+      return;
+    }
     subscription = TestApp.getManager().getService().getSome(datasetCode)
         .flatMap(feed->Observable.zip(Observable.from(feed.getDataset().getData()).map(SmallItem::new).toList(), Observable.just(feed),Pair::new))
         .subscribeOn(Schedulers.io())
@@ -51,7 +58,9 @@ public class MainPresenter extends BaseMvpPresenter<MainView> {
     if (getView() == null) {
       return;
     }
-
+    if (cach.get(oldConstraint) == null) {
+      cach.put(oldConstraint, data);
+    }
     getView().getSomeSuccess(data);
   }
 

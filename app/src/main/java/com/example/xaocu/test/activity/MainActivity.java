@@ -33,9 +33,9 @@ import butterknife.OnTextChanged;
 public class MainActivity extends BaseMvpActivity<MainView, MainPresenter> implements MainView, OnDelegateClickListener {
   public static final int MIN_SEARCH_LENGTH = 4;
   @BindView(R.id.rvView)
-  private RecyclerView rvView;
+  RecyclerView rvView;
   @BindView(R.id.etSearch)
-  private AutoCompleteTextView etSearch;
+  AutoCompleteTextView etSearch;
   private BaseAdapter<SmallItem> adapter;
   private SuggestAdapter suggestAdapter;
 
@@ -63,11 +63,6 @@ public class MainActivity extends BaseMvpActivity<MainView, MainPresenter> imple
 
   @OnTextChanged(R.id.etSearch)
   public void textChanged(CharSequence text) {
-    if (suggestAdapter.getLastSearch().equals(text)) {
-      return;
-    }
-    adapter.clear();
-    adapter.notifyDataSetChanged();
   }
 
   @OnClick(R.id.btnSearch)
@@ -80,6 +75,7 @@ public class MainActivity extends BaseMvpActivity<MainView, MainPresenter> imple
   }
 
   private void search(@NonNull String text) {
+    adapter.clear();
     getPresenter().doSome(text);
   }
 
