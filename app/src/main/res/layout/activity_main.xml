@@ -6,33 +6,58 @@
     android:layout_height="match_parent"
     android:padding="4dp"
     tools:context=".activity.MainActivity">
-<LinearLayout
-    android:id="@+id/searchLayout"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:gravity="center_vertical">
 
-    <AutoCompleteTextView
-        android:id="@+id/etSearch"
-        android:layout_width="0dp"
-        android:layout_weight="1"
+    <Spinner
+        android:id="@+id/spinnerView"
+        android:layout_width="match_parent"
+        android:layout_height="32dp"/>
+
+    <LinearLayout
+        android:id="@+id/searchLayout"
+        android:layout_below="@+id/spinnerView"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginRight="8dp"
-        android:layout_marginEnd="8dp"/>
-    <Button
-        android:id="@+id/btnSearch"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:background="@android:drawable/ic_menu_search"/>
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
 
-</LinearLayout>
+        <AutoCompleteTextView
+            android:id="@+id/etSearch"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_weight="1"
+            android:singleLine="true"
+            android:lines="1"
+            android:inputType="text|textNoSuggestions"
+            android:maxLines="1"/>
+
+        <Button
+            android:id="@+id/btnSearch"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="@android:drawable/ic_menu_search"/>
+
+    </LinearLayout>
 
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/rvView"
-        android:layout_below="@+id/searchLayout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent"
+        android:layout_below="@+id/searchLayout"/>
+
+    <FrameLayout
+        android:id="@+id/progressLayout"
+        android:layout_width="match_parent"
+        android:layout_below="@+id/searchLayout"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        >
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"/>
+    </FrameLayout>
 
 </RelativeLayout>
