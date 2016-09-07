@@ -8,8 +8,9 @@ import android.widget.TextView;
 import com.example.xaocu.test.BaseItem;
 import com.example.xaocu.test.OnDelegateClickListener;
 import com.example.xaocu.test.R;
-import com.example.xaocu.test.items.SmallItem;
+import com.example.xaocu.test.items.OnlineFeedItem;
 import com.example.xaocu.test.model.Feed;
+import com.example.xaocu.test.model.OnlineFeed;
 
 import java.util.List;
 
@@ -19,10 +20,10 @@ import butterknife.OnClick;
 /**
  * Created by Iurii Kushyk on 03.09.2016.
  */
-public class SmallItemDelegate extends BaseDelegate {
+public class OnlineFeedDelegate extends BaseDelegate {
 
 
-  public SmallItemDelegate(OnDelegateClickListener listener) {
+  public OnlineFeedDelegate(OnDelegateClickListener listener) {
     super(listener);
   }
 
@@ -33,27 +34,12 @@ public class SmallItemDelegate extends BaseDelegate {
 
   @Override
   public void onBindViewHolder(Object object, RecyclerView.ViewHolder holder, int position, List<? extends BaseItem> items) {
-    if (object == null) {
-      return;
-    }
     SmallItemViewHolder vh = (SmallItemViewHolder) holder;
-    List<Object> objects = ((SmallItem)items.get(position)).getObjects();
-    List<String> column_names = ((Feed) object).getDataset().getColumn_names();
-    if (column_names == null) {
-      return;
-    }
-    for (int i = 0; i < column_names.size(); i++) {
-      String columnName = column_names.get(i);
-      if ("open".equalsIgnoreCase(columnName)) {
-        vh.tvOpen.setText(objects.get(i).toString());
-      } else if ("high".equalsIgnoreCase(columnName)) {
-        vh.tvHigh.setText(objects.get(i).toString());
-      } else if ("low".equalsIgnoreCase(columnName)) {
-        vh.tvLow.setText(objects.get(i).toString());
-      }else if ("close".equalsIgnoreCase(columnName)) {
-        vh.tvClose.setText(objects.get(i).toString());
-      }
-    }
+    OnlineFeed feed = ((OnlineFeed)((OnlineFeedItem)items.get(position)).getFeeds());
+    vh.tvOpen.setText(feed.getOpen());
+    vh.tvHigh.setText(feed.getHigh());
+    vh.tvLow.setText(feed.getLow());
+    vh.tvClose.setText(feed.getClose());
   }
 
   public class SmallItemViewHolder extends BaseViewHolder{

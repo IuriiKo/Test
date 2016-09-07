@@ -1,56 +1,57 @@
 package com.example.xaocu.test.net;
 
+import android.support.annotation.NonNull;
+
 import com.example.xaocu.test.Logger;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
-import okhttp3.HttpUrl;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import retrofit2.Retrofit;
-import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
-import retrofit2.converter.gson.GsonConverterFactory;
+import okhttp3.ResponseBody;
+import rx.Observable;
 
 /**
  * Created by Iurii Kushyk on 04.09.2016.
  */
 public class NetManager {
-  private static final String LOG_TAG = Logger.createTag(NetInterceptor.class);
-
-  private final TestRequestService service;
+  private static final String LOG_TAG = Logger.createTag(NetManager.class);
+  private final OkHttpClient client;
+  private final ServiceFactory serviceFactory;
+  private @ServiceType int serviceType = ServiceType.QUANDL;
 
   public NetManager() {
-    OkHttpClient client = new OkHttpClient.Builder().addInterceptor(new NetInterceptor()).build();
-    Retrofit retrofit = new Retrofit.Builder().baseUrl("https://www.quandl.com/")
-        .addConverterFactory(GsonConverterFactory.create())
-        .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
-        .client(client)
-        .build();
-    service = retrofit.create(TestRequestService.class);
+    client = new OkHttpClient.Builder()
+        .addInterceptor(new NetInterceptor())
+        .connectTimeout(5, TimeUnit.SECONDS)
+        .writeTimeout(10, TimeUnit.SECONDS)
+        .readTimeout(10, TimeUnit.SECONDS).build();
+    serviceFactory = new ServiceFactory(client);
   }
 
-  public TestRequestService getService() {
-    return service;
+  public Observable<ResponseBody> getData(@NonNull String name) {
+    return serviceFactory.getServiceWrapper(serviceType).getData(name);
+  }
+
+  @ServiceType
+  public int getServiceType() {
+    return serviceType;
+  }
+
+  public void setServiceType(int serviceType) {
+    this.serviceType = serviceType;
   }
 
   private class NetInterceptor implements Interceptor {
-    private static final String PER_PAGE = "per_page";
-    private static final String PER_PAGE_VALUE = "100";
-    private static final String SORT_BY = "sort_by";
-    private static final String SORT_BY_VALUE = "id";
-    public static final String API_KEY = "api_key";
 
     @Override
     public Response intercept(Chain chain) throws IOException {
       Request request = chain.request();
-      HttpUrl url = request.url().newBuilder()
-          .addQueryParameter(API_KEY, "mi2CL7WxcRmtvaYdURCx")
-          .build();
-      Request newRequest = request.newBuilder().url(url).build();
-      Logger.d(LOG_TAG,url.toString());
-      return chain.proceed(newRequest);
+      Logger.d(LOG_TAG,request.url().toString());
+      return chain.proceed(request);
     }
   }
 }

@@ -1,16 +1,16 @@
 package com.example.xaocu.test.presenter;
 
-import android.support.annotation.NonNull;
-import android.util.LruCache;
-import android.util.Pair;
+import android.os.Bundle;
 
 import com.example.xaocu.test.Logger;
 import com.example.xaocu.test.TestApp;
-import com.example.xaocu.test.items.SmallItem;
-import com.example.xaocu.test.model.Feed;
+import com.example.xaocu.test.items.OnlineFeedItem;
+import com.example.xaocu.test.model.BaseFeed;
 import com.example.xaocu.test.mvp.BaseMvpPresenter;
 import com.example.xaocu.test.mvp.view.MainView;
+import com.example.xaocu.test.net.ServiceType;
 import com.example.xaocu.test.tools.CSVFile;
+import com.example.xaocu.test.tools.Cash;
 
 import java.util.List;
 
@@ -24,73 +24,93 @@ import rx.schedulers.Schedulers;
  */
 public class MainPresenter extends BaseMvpPresenter<MainView> {
   private static final String LOG_TAG = Logger.createTag(MainPresenter.class);
-  public static final int MAX_CASH_SIZE = 40 * 1024;
+  public static final String CASH_KEY = "cash";
   private Subscription subscription;
   private Subscription subscriptionGetCVCode;
   private String oldConstraint;
-  private LruCache<String, Pair<List<SmallItem>,Feed>> cach = new LruCache<>(MAX_CASH_SIZE);
+  private Cash cash = new Cash();
+  @ServiceType
+  private int cashServiceType;
 
   public MainPresenter(MainView view) {
     super(view);
   }
 
-  public void doSome(@NonNull String datasetCode) {
-    if (datasetCode.equalsIgnoreCase(oldConstraint)) {
+  public void getData(String datasetCode) {
+    if (datasetCode == null ||
+        (datasetCode.equalsIgnoreCase(oldConstraint) && cashServiceType == TestApp.getManager().getServiceType()) ||
+        datasetCode.isEmpty()) {
       return;
     }
     if (subscription != null) {
       subscription.unsubscribe();
     }
     oldConstraint = datasetCode;
-    if (cach.get(datasetCode) != null) {
-      onSuccessDoSome(cach.get(oldConstraint));
+    cashServiceType = TestApp.getManager().getServiceType();
+    List<OnlineFeedItem> listFromCash = cash.getFromCash(oldConstraint, cashServiceType);
+    if (listFromCash != null) {
+      onSuccessGetData(listFromCash);
       return;
     }
-    subscription = TestApp.getManager().getService().getSome(datasetCode)
-        .flatMap(feed->Observable.zip(Observable.from(feed.getDataset().getData()).map(SmallItem::new).toList(), Observable.just(feed),Pair::new))
+    subscription = TestApp.getManager().getData(datasetCode)
+        .map(responseBody -> CSVFile.read(responseBody.byteStream(), cashServiceType))
+        .flatMap(Observable::from)
+        .map(OnlineFeedItem::new)
+        .toList()
         .subscribeOn(Schedulers.io())
         .observeOn(AndroidSchedulers.mainThread())
-        .subscribe(this::onSuccessDoSome, this::onErrorDoSome);
+        .subscribe(this::onSuccessGetData, this::onErrorGetData);
     addSubscription(subscription);
   }
 
-  private void onSuccessDoSome(Pair<List<SmallItem>,Feed> data) {
+  private void onSuccessGetData(List<OnlineFeedItem> data) {
     if (getView() == null) {
       return;
     }
-    if (cach.get(oldConstraint) == null) {
-      cach.put(oldConstraint, data);
+    List<OnlineFeedItem> listFromCash = cash.getFromCash(oldConstraint, TestApp.getManager().getServiceType());
+    if (listFromCash == null) {
+      cash.addToCash(oldConstraint, data, cashServiceType);
     }
-    getView().getSomeSuccess(data);
+    getView().successDataLoading(data);
   }
 
-  private void onErrorDoSome(Throwable t) {
+  private void onErrorGetData(Throwable t) {
     Logger.e(LOG_TAG, t.getMessage());
     if (getView() == null) {
       return;
     }
-    getView().getSomeError(t);
+    getView().errorDataLoading(t);
   }
 
   public void findCvCode() {
     if (subscriptionGetCVCode != null) {
       subscriptionGetCVCode.unsubscribe();
     }
-    subscriptionGetCVCode = Observable.defer(() -> Observable.just(CSVFile.read()))
+    subscriptionGetCVCode = Observable.defer(() -> Observable.just(CSVFile.readRaw()))
         .subscribeOn(Schedulers.computation())
         .observeOn(AndroidSchedulers.mainThread())
-        .subscribe(this::onSuccessfindCvCode, this::onErrorFindCvCode);
+        .subscribe(this::onSuccessFindCvCode, this::onErrorFindCvCode);
     addSubscription(subscriptionGetCVCode);
   }
 
-  private void onSuccessfindCvCode(List<Pair<String,String>> cvList) {
+  private void onSuccessFindCvCode(List<BaseFeed> cvList) {
     if (getView() == null) {
       return;
     }
-    getView().loadCSV(cvList);
+    getView().csvDataLoaded(cvList);
   }
 
   private void onErrorFindCvCode(Throwable t) {
     Logger.e(LOG_TAG, t.getMessage());
+  }
+
+  public void onSaveInstanceState(Bundle outState) {
+    outState.putSerializable(CASH_KEY, cash);
+  }
+
+  public void onRestoreState(Bundle savedInstanceState) {
+    if (savedInstanceState != null) {
+      cash = (Cash) savedInstanceState.getSerializable(CASH_KEY);
+    }
   }
 }

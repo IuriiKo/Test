@@ -1,12 +1,14 @@
 package com.example.xaocu.test.adapters;
 
-import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.TextView;
+
+import com.example.xaocu.test.model.BaseFeed;
+import com.example.xaocu.test.model.RawFeed;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,15 +17,15 @@ import java.util.List;
  * Created by Iurii Kushyk on 05.09.2016.
  */
 public class SuggestAdapter  extends android.widget.BaseAdapter implements Filterable {
-  private List<Pair<String, String>> tickers = new ArrayList<>();
-  private List<Pair<String, String>> origin = new ArrayList<>();
+  private List<BaseFeed> tickers = new ArrayList<>();
+  private List<BaseFeed> origin = new ArrayList<>();
   private CharSequence lastSearch = "";
 
   public CharSequence getLastSearch() {
     return lastSearch;
   }
 
-  public void setTickers(List<Pair<String, String>> tickers) {
+  public void setTickers(List<BaseFeed> tickers) {
     this.tickers = tickers;
   }
 
@@ -44,7 +46,7 @@ public class SuggestAdapter  extends android.widget.BaseAdapter implements Filte
 
   @Override
   public View getView(int i, View view, ViewGroup viewGroup) {
-    String text = origin.get(i).first;
+    String text = ((RawFeed)origin.get(i)).getAbbreviation();
     if (view == null) {
       view = getLayoutInflater(viewGroup).inflate(android.R.layout.simple_list_item_1, viewGroup, false);
     }
@@ -61,13 +63,14 @@ public class SuggestAdapter  extends android.widget.BaseAdapter implements Filte
   public class SuggestFilter extends Filter{
     @Override
     protected FilterResults performFiltering(CharSequence charSequence) {
-      List<Pair<String, String>> resultsList = new ArrayList<>();
+      List<BaseFeed> resultsList = new ArrayList<>();
       if (charSequence == null || charSequence.equals(lastSearch)) {
         return null;
       }
       lastSearch = charSequence;
-      for (Pair<String, String> ticker : tickers) {
-        if (ticker.first.toLowerCase().contains(charSequence.toString().toLowerCase())) {
+      for (BaseFeed ticker : tickers) {
+        RawFeed feed = (RawFeed) ticker;
+        if ((feed.getAbbreviation().toLowerCase().contains(charSequence.toString().toLowerCase()))) {
           resultsList.add(ticker);
         }
       }
@@ -84,7 +87,7 @@ public class SuggestAdapter  extends android.widget.BaseAdapter implements Filte
       }
       origin.clear();
       notifyDataSetChanged();
-      List<Pair<String, String>> values = (List<Pair<String, String>>) filterResults.values;
+      List<BaseFeed> values = (List<BaseFeed>) filterResults.values;
       origin.addAll(values);
     }
   }
