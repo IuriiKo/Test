@@ -22,6 +22,10 @@ import java.util.Map;
  * Created by Iurii Kushyk on 05.09.2016.
  */
 public class CSVFile {
+  public static final String OPEN_KEY = "open";
+  public static final String HIGH_KEY = "high";
+  public static final String LOW_KEY = "low";
+  public static final String CLOSE_KEY = "close";
   private static String LOG_TAG = Logger.createTag(CSVFile.class);
 
   public static List<BaseFeed> readRaw() {
@@ -47,8 +51,7 @@ public class CSVFile {
     return feeds;
   }
 
-  private static void initFeed(Map<String, String> map, @ServiceType int serviceType, List<BaseFeed> feeds) {
-    switch (serviceType) {
+  private static void initFeed(Map<String, String> map, @ServiceType int serviceType, List<BaseFeed> feeds) {switch (serviceType) {
       case ServiceType.QUANDL:
       case ServiceType.QUOTEMEDIA:
       case ServiceType.GOOGLE:
@@ -90,10 +93,20 @@ public class CSVFile {
 
   private static BaseFeed initOnlineFeed(Map<String, String> map) {
     OnlineFeed feed = new OnlineFeed();
-    feed.setOpen(map.get("Open"));
-    feed.setHigh(map.get("High"));
-    feed.setLow(map.get("Low"));
-    feed.setClose(map.get("Close"));
+    for (String s : map.keySet()) {
+      if (s.equalsIgnoreCase(OPEN_KEY)) {
+        feed.setOpen(map.get(s));
+      } else if (s.equalsIgnoreCase(HIGH_KEY)) {
+        feed.setHigh(map.get(s));
+      } else if (s.equalsIgnoreCase(LOW_KEY)) {
+        feed.setLow(map.get(s));
+      }else if (s.equalsIgnoreCase(CLOSE_KEY)) {
+        feed.setClose(map.get(s));
+      }
+      if (feed.isFull()) {
+        break;
+      }
+    }
     return feed;
   }
 }
